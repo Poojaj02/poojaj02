@@ -920,18 +920,28 @@ function load() {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      // Validate it has required arrays, otherwise use defaults
-      if (parsed.projects && parsed.skills && parsed.experience) return parsed;
+      if (parsed && parsed.projects && parsed.projects.length > 0 && parsed.skills && parsed.experience) {
+        return parsed;
+      }
     }
   } catch(e) {}
   return defaultState();
 }
 
 function save() {
-  localStorage.setItem(KEY, JSON.stringify(state));
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
 }
 
-let state = load();
+let state = defaultState(); // always start with defaults
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.projects && parsed.projects.length > 0 && parsed.skills && parsed.experience) {
+      state = parsed;
+    }
+  }
+} catch(e) {}
 
 // ─── Cursor ──────────────────────────────────────────────────────────────────
 const cursor = document.getElementById('cursor');
@@ -1242,5 +1252,10 @@ render();
 
 // Skill bars on scroll
 const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) { document.querySelectorAll('.skill-fill').forEach(el=>
-    </html>
+  entries.forEach(e => { if(e.isIntersecting) { document.querySelectorAll('.skill-fill').forEach(el=>el.style.width=el.dataset.pct+'%'); } });
+}, { threshold: 0.3 });
+const skillsSection = document.getElementById('skills');
+if (skillsSection) obs.observe(skillsSection);
+</script>
+</body>
+</html>
