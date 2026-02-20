@@ -51,6 +51,12 @@
     opacity: 0.5;
   }
 
+  /* Hide custom cursor on touch/mobile devices */
+  @media (hover: none), (pointer: coarse) {
+    .cursor, .cursor-ring { display: none !important; }
+    body { cursor: auto !important; }
+  }
+
   /* Grid background */
   body::before {
     content: '';
@@ -599,6 +605,66 @@
   }
   @keyframes toastIn { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
 
+
+  /* Small Projects */
+  .small-projects-list { display: flex; flex-direction: column; gap: 2px; }
+  .small-project-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .small-project-item:hover {
+    border-color: rgba(77,159,255,0.3);
+    transform: translateX(4px);
+  }
+  .small-project-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 0;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.3s;
+  }
+  .small-project-item:hover::before { height: 60%; }
+  .small-project-left { display: flex; flex-direction: column; gap: 6px; }
+  .small-project-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; }
+  .small-project-desc { color: var(--muted); font-size: 0.78rem; line-height: 1.6; }
+  .small-project-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .small-project-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .small-project-tag {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(77,159,255,0.08);
+    border: 1px solid rgba(77,159,255,0.2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .small-project-link {
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .small-project-link:hover { color: var(--accent); }
+  @media (max-width: 600px) {
+    .small-project-item { grid-template-columns: 1fr; }
+    .small-project-right { align-items: flex-start; }
+  }
+
   /* Password Modal */
   .pw-overlay {
     display: none;
@@ -743,6 +809,7 @@
     <ul>
       <li><a href="#about">About</a></li>
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#small-projects">Small Projects</a></li>
       <li><a href="#skills">Skills</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#contact">Contact</a></li>
@@ -798,6 +865,20 @@
     <div class="projects-grid" id="projectsGrid"></div>
     <div style="margin-top:16px">
       <button class="add-btn" onclick="openModal('project')">+ Add New Project</button>
+    </div>
+  </div>
+</section>
+
+<!-- Small Projects -->
+<section id="small-projects">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Quick Wins</div>
+      <h2>Small <span style="color:var(--accent)">Projects</span></h2>
+    </div>
+    <div class="small-projects-list" id="smallProjectsList"></div>
+    <div style="margin-top:16px">
+      <button class="add-btn" onclick="openModal('smallproject')">+ Add Small Project</button>
     </div>
   </div>
 </section>
@@ -911,6 +992,11 @@ function defaultState() {
       { id: uid(), period: '2023 – Present', title: 'Freelance Data Analyst', company: 'Self-Employed', desc: 'Working with startups and SMEs to build dashboards, clean messy data, and deliver actionable insights.' },
       { id: uid(), period: '2021 – 2023', title: 'Junior Data Analyst', company: 'TechCorp Solutions', desc: 'Maintained reporting pipelines, built SQL queries for weekly KPI reports, and created Tableau dashboards for executive team.' },
     ],
+    smallProjects: [
+      { id: uid(), category: 'Automation', title: 'Excel Sales Report Automation', desc: 'Automated weekly sales reporting using Excel macros, saving 3 hours of manual work per week.', tools: ['Excel', 'VBA'], link: '#' },
+      { id: uid(), category: 'Visualization', title: 'Instagram Engagement Tracker', desc: 'Built a simple Google Sheets dashboard to track and visualize Instagram post performance over time.', tools: ['Google Sheets', 'Charts'], link: '#' },
+      { id: uid(), category: 'Analysis', title: 'Personal Finance Analyzer', desc: 'Analyzed 12 months of personal expense data to identify spending patterns and savings opportunities.', tools: ['Python', 'Matplotlib'], link: '#' },
+    ],
     editable: {}
   };
 }
@@ -921,6 +1007,7 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.projects && parsed.projects.length > 0 && parsed.skills && parsed.experience) {
+        if (!parsed.smallProjects) parsed.smallProjects = defaultState().smallProjects;
         return parsed;
       }
     }
@@ -938,14 +1025,21 @@ try {
   if (raw) {
     const parsed = JSON.parse(raw);
     if (parsed && parsed.projects && parsed.projects.length > 0 && parsed.skills && parsed.experience) {
+        if (!parsed.smallProjects) parsed.smallProjects = defaultState().smallProjects;
       state = parsed;
     }
   }
 } catch(e) {}
 
-// ─── Cursor ──────────────────────────────────────────────────────────────────
+// ─── Cursor (desktop only) ───────────────────────────────────────────────────
 const cursor = document.getElementById('cursor');
 const ring = document.getElementById('cursorRing');
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+if (isTouchDevice) {
+  cursor.style.display = 'none';
+  ring.style.display = 'none';
+  document.body.style.cursor = 'auto';
+}
 let rx = 0, ry = 0;
 document.addEventListener('mousemove', e => {
   cursor.style.left = e.clientX - 6 + 'px';
@@ -966,6 +1060,7 @@ requestAnimationFrame(function loop() {
 // ─── Render ──────────────────────────────────────────────────────────────────
 function render() {
   renderProjects();
+  renderSmallProjects();
   renderSkills();
   renderExperience();
   renderEditable();
@@ -990,6 +1085,33 @@ function renderProjects() {
       </div>
     `;
     grid.appendChild(d);
+  });
+}
+
+function renderSmallProjects() {
+  const list = document.getElementById('smallProjectsList');
+  if (!list) return;
+  list.innerHTML = '';
+  const items = state.smallProjects || [];
+  items.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'small-project-item';
+    d.innerHTML = `
+      <div class="small-project-left">
+        <div class="small-project-title">${esc(p.title)}</div>
+        <div class="small-project-desc">${esc(p.desc)}</div>
+        <div class="small-project-tools">${(p.tools||[]).map(t=>`<span class="tool-tag">${esc(t)}</span>`).join('')}</div>
+        <div class="edit-controls" style="margin-top:10px">
+          <button class="btn-edit" onclick="openModal('smallproject','${p.id}')">Edit</button>
+          <button class="btn-delete" onclick="deleteItem('smallproject','${p.id}')">Delete</button>
+        </div>
+      </div>
+      <div class="small-project-right">
+        <span class="small-project-tag">${esc(p.category)}</span>
+        ${p.link ? `<a class="small-project-link" href="${esc(p.link)}" target="_blank">View →</a>` : ''}
+      </div>
+    `;
+    list.appendChild(d);
   });
 }
 
@@ -1161,6 +1283,24 @@ const modals = {
     }),
     list: 'projects'
   },
+  smallproject: {
+    title: (id) => id ? 'Edit Small Project' : 'Add Small Project',
+    fields: (data) => `
+      <div class="form-group"><label>Category</label><input id="f-category" value="${data.category||''}" placeholder="e.g. Automation"/></div>
+      <div class="form-group"><label>Title</label><input id="f-title" value="${data.title||''}" placeholder="Project title"/></div>
+      <div class="form-group"><label>Description</label><textarea id="f-desc" placeholder="Brief description...">${data.desc||''}</textarea></div>
+      <div class="form-group"><label>Tools (comma separated)</label><input id="f-tools" value="${(data.tools||[]).join(', ')}" placeholder="Excel, Python"/></div>
+      <div class="form-group"><label>Link (optional)</label><input id="f-link" value="${data.link||''}" placeholder="https://..."/></div>
+    `,
+    get: () => ({
+      category: document.getElementById('f-category').value,
+      title: document.getElementById('f-title').value,
+      desc: document.getElementById('f-desc').value,
+      tools: document.getElementById('f-tools').value.split(',').map(s=>s.trim()).filter(Boolean),
+      link: document.getElementById('f-link').value,
+    }),
+    list: 'smallProjects'
+  },
   skill: {
     title: (id) => id ? 'Edit Skill' : 'Add Skill',
     fields: (data) => `
@@ -1222,7 +1362,7 @@ function saveModal() {
 }
 
 function deleteItem(type, id) {
-  const map = { project: 'projects', skill: 'skills', experience: 'experience' };
+  const map = { project: 'projects', smallproject: 'smallProjects', skill: 'skills', experience: 'experience' };
   const list = map[type];
   if (confirm('Delete this item?')) {
     state[list] = state[list].filter(x=>x.id!==id);
