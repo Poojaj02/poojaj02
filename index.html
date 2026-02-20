@@ -890,6 +890,8 @@ let editMode = false;
 let currentModal = null;
 let editingId = null;
 
+function uid() { return Math.random().toString(36).slice(2,9); }
+
 function defaultState() {
   return {
     projects: [
@@ -1241,3 +1243,4 @@ render();
 // Skill bars on scroll
 const obs = new IntersectionObserver(entries => {
   entries.forEach(e => { if(e.isIntersecting) { document.querySelectorAll('.skill-fill').forEach(el=>
+    </html>
