@@ -173,10 +173,10 @@
   }
   h1 {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-size: clamp(2rem, 5vw, 4rem);
     font-weight: 800;
-    line-height: 1.0;
-    letter-spacing: -2px;
+    line-height: 1.15;
+    letter-spacing: -1px;
     margin-bottom: 24px;
   }
   h1 .line { display: block; overflow: hidden; }
@@ -843,7 +843,7 @@
         <div class="contact-links">
           <a class="contact-link" href="#" id="emailLink">
             <span class="contact-link-icon">@</span>
-            <span data-editable="contact-email" contenteditable="false">your@email.com</span>
+            <span data-editable="contact-email" contenteditable="false"><span class="__cf_email__" data-cfemail="552c3a2027153038343c397b363a38">[email&#160;protected]</span></span>
           </a>
           <a class="contact-link" href="#" id="linkedinLink">
             <span class="contact-link-icon">in</span>
@@ -883,7 +883,7 @@
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ─── State ───────────────────────────────────────────────────────────────────
 const KEY = 'da_portfolio_v1';
 let state = load();
@@ -1237,10 +1237,4 @@ render();
 
 // Skill bars on scroll
 const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) { document.querySelectorAll('.skill-fill').forEach(el=>el.style.width=el.dataset.pct+'%'); } });
-}, { threshold: 0.3 });
-const skillsSection = document.getElementById('skills');
-if (skillsSection) obs.observe(skillsSection);
-</script>
-</body>
-</html>
+  entries.forEach(e => { if(e.isIntersecting) { document.querySelectorAll('.skill-fill').forEach(el=>
